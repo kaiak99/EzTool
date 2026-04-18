@@ -29,25 +29,39 @@ struct LCTabView: View {
         Group {
             let appListView = LCAppListView(appDataFolderNames: $appDataFolderNames, tweakFolderNames: $tweakFolderNames)
             let sourcesView = LCSourcesView()
+            
             if #available(iOS 19.0, *), SharedModel.isLiquidGlassSearchEnabled {
                 TabView(selection: $sharedModel.selectedTab) {
+                    /* --- COMMENTATO: TAB SOURCES (books.vertical) ---
                     if DataManager.shared.model.multiLCStatus != 2 {
                         Tab("lc.tabView.sources".loc, systemImage: "books.vertical", value: LCTabIdentifier.sources) {
                             sourcesView
                         }
                     }
+                    ------------------------------------------------ */
+                    
                     Tab("lc.tabView.apps".loc, systemImage: "square.stack.3d.up.fill", value: LCTabIdentifier.apps) {
                         appListView
                     }
+                    
+                    /* --- COMMENTATO: TAB TWEAKS (wrench.and.screwdriver) ---
                     if DataManager.shared.model.multiLCStatus != 2 {
                         Tab("lc.tabView.tweaks".loc, systemImage: "wrench.and.screwdriver", value: LCTabIdentifier.tweaks) {
                             LCTweaksView(tweakFolders: $tweakFolderNames)
                         }
                     }
+                    ------------------------------------------------------- */
+                    
                     Tab("lc.tabView.settings".loc, systemImage: "gearshape.fill", value: LCTabIdentifier.settings) {
                         LCSettingsView(appDataFolderNames: $appDataFolderNames)
                     }
+                    
                     Tab("Search".loc, systemImage: "magnifyingglass", value: LCTabIdentifier.search, role: .search) {
+                        // Modificato per cercare solo nelle App visto che Sources è rimosso
+                        appListView
+                            .searchable(text: appListView.$searchContext.query)
+                        
+                        /* --- COMMENTATO: LOGICA RICERCA SOURCES ---
                         if previousSelectedTab == .sources {
                             sourcesView
                                 .searchable(text: sourcesView.$searchContext.query)
@@ -55,11 +69,12 @@ struct LCTabView: View {
                             appListView
                                 .searchable(text: appListView.$searchContext.query)
                         }
-
+                        ------------------------------------------ */
                     }
                 }
             } else {
                 TabView(selection: $sharedModel.selectedTab) {
+                    /* --- COMMENTATO: TAB SOURCES (VECCHIA SINTASSI) ---
                     if DataManager.shared.model.multiLCStatus != 2 {
                         sourcesView
                             .tabItem {
@@ -67,11 +82,15 @@ struct LCTabView: View {
                             }
                             .tag(LCTabIdentifier.sources)
                     }
+                    ---------------------------------------------------- */
+                    
                     appListView
                         .tabItem {
                             Label("lc.tabView.apps".loc, systemImage: "square.stack.3d.up.fill")
                         }
                         .tag(LCTabIdentifier.apps)
+                    
+                    /* --- COMMENTATO: TAB TWEAKS (VECCHIA SINTASSI) ---
                     if DataManager.shared.model.multiLCStatus != 2 {
                         LCTweaksView(tweakFolders: $tweakFolderNames)
                             .tabItem{
@@ -79,6 +98,7 @@ struct LCTabView: View {
                             }
                             .tag(LCTabIdentifier.tweaks)
                     }
+                    ---------------------------------------------------- */
                     
                     LCSettingsView(appDataFolderNames: $appDataFolderNames)
                         .tabItem {
@@ -168,8 +188,10 @@ struct LCTabView: View {
                 sharedModel.selectedTab = .apps
             case "certificate":
                 sharedModel.selectedTab = .settings
+            /* --- COMMENTATO: DEEP LINK PER SOURCES ---
             case "source":
                 sharedModel.selectedTab = .sources
+            ----------------------------------------- */
             default:
                 return
             }
